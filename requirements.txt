@@ -1,0 +1,14 @@
+torch==2.6.0
+lightning
+torchvision
+omegaconf
+torchmetrics
+fvcore
+iopath
+xformers==0.0.29.post3
+submitit
+tqdm
+--extra-index-url https://pypi.nvidia.com
+einops
+wandb
+timm
