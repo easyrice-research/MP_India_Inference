@@ -1,6 +1,3 @@
-import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-
 import torch 
 from torchvision import datasets, transforms
 from PIL import Image
@@ -14,6 +11,20 @@ from dataset import CustomDataset
 
 logger = logging.getLogger("inference").setLevel(logging.INFO)
 
+transformer = None
+clf_model = None
+
+CLASS_MAP = {
+    'overall': [0, 1, 2],
+    '1121': [0, 1],
+    '1509': [0, 2]
+}
+
+CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
+
+def map_class_names(model: str, class_map: dict, class_dict: dict):
+    return {i: class_dict[i] if i in class_map[model] else 'None' for i in class_dict}
+
 def preprocess_image(image):
     """
     Preprocess the input image for the DINO model.
@@ -21,9 +32,9 @@ def preprocess_image(image):
         image: The input image."""
 
     transform = transforms.Compose([
-    transforms.Resize((224, 224)),  # Resize the image
-    transforms.ToTensor(),  # Convert image to tensor
-    transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image
+        transforms.Resize((224, 224)),  # Resize the image
+        transforms.ToTensor(),  # Convert image to tensor
+        transforms.Normalize(mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225])  # Normalize image
     ])
 
     return transform(image)
@@ -55,8 +66,9 @@ def predict_and_transform(model, infer_loader):
         model (torch.nn.Module): The classifier model.
         val_loader (DataLoader): DataLoader"""
     
-    class_dict = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
-    predictions = []
+    class_names = map_class_names(model, CLASS_MAP, CLASS_DICT)
+    
+    result = []
     # Disable gradient computation for inference
     model.to("cuda")
     model.eval()
@@ -66,19 +78,14 @@ def predict_and_transform(model, infer_loader):
             x_batch = x_batch.squeeze(1)
             logits = model(x_batch)
             preds = torch.argmax(logits, dim=1)  # Get the predicted class index for each sample
-            predictions.extend(preds.cpu().numpy())  # Move back to CPU and store the predictions
+            result.append([{"class": class_names[preds.cpu().numpy()], "weight": 0}])  # Move back to CPU and store the predictions
 
-    predicted_classes = np.array(predictions) 
-    predicted_class_names = [class_dict[pred] for pred in predicted_classes] # map the predicted class indices to class names
-    
-    return predicted_classes
+    return {'result': result}
 
-def infer(transformer, clf_model, img):
+def infer(img):
     """
     Perform inference using the DINO model and classifier.
     Args:
-        transformer (torch.nn.Module): The DINO model.
-        clf_model (torch.nn.Module): The classifier model.
         img (torch.Tensor): The input image tensor.
     Returns:
         torch.Tensor: The predicted classes.
@@ -92,16 +99,11 @@ def infer(transformer, clf_model, img):
 
     return preds
 
-
-
-if __name__ == "__main__":
+def model_initilize():
+    global transformer, clf_model
     transformer_path = "teacher_checkpoint.pth"
     transformer = get_dino_finetuned_downloaded(model_path=transformer_path, modelname="dinov2_vitb14_reg")
     clf_path = "best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
-    clf = get_classfier(checkpoint_path=clf_path)
+    clf_model = get_classfier(checkpoint_path=clf_path)
 
-    print(clf)
-    # img = np.load(f"/media/new_volumn/SIMDINOV2_EASYRICE/04-4-2025/npz/test_data.npz")
-    # img = img['x_test'] # extract the images from the npz file  (adjust the key as per your data)
-    # preds = infer(transformer, clf, img)
-    # print(preds)
+model_initilize()
