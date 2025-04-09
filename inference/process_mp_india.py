@@ -114,9 +114,9 @@ def infer(img, model_weight, request_id):
 
 def model_initilize():
     global transformer, clf_model
-    transformer_path = "teacher_checkpoint.pth"
+    transformer_path = "/media/nas/MP/MP_India-weights/simdinov2/training_199999/teacher_checkpoint.pth"
     transformer = get_dino_finetuned_downloaded(model_path=transformer_path, modelname="dinov2_vitb14_reg")
-    clf_path = "best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
+    clf_path = "/media/nas/MP/MP_India-weights/clf/best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
     clf_model = get_classfier(checkpoint_path=clf_path)
 
 model_initilize()

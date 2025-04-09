@@ -1,6 +1,3 @@
-import os
-os.environ['KMP_DUPLICATE_LIB_OK'] = 'TRUE'
-
 import torch 
 from torchvision import datasets, transforms
 from PIL import Image
@@ -95,13 +92,12 @@ def infer(transformer, clf_model, img):
 
 
 if __name__ == "__main__":
-    transformer_path = "teacher_checkpoint.pth"
+    transformer_path = "/media/nas/MP/MP_India-weights/simdinov2/training_199999/teacher_checkpoint.pth"
     transformer = get_dino_finetuned_downloaded(model_path=transformer_path, modelname="dinov2_vitb14_reg")
-    clf_path = "best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
+    clf_path = "/media/nas/MP/MP_India-weights/clf/best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
     clf = get_classfier(checkpoint_path=clf_path)
 
-    print(clf)
-    # img = np.load(f"/media/new_volumn/SIMDINOV2_EASYRICE/04-4-2025/npz/test_data.npz")
-    # img = img['x_test'] # extract the images from the npz file  (adjust the key as per your data)
-    # preds = infer(transformer, clf, img)
-    # print(preds)
+    img = np.load(f"/media/new_volumn/SIMDINOV2_EASYRICE/04-4-2025/npz/test_data.npz")
+    img = img['x_test'] # extract the images from the npz file  (adjust the key as per your data)
+    preds = infer(transformer, clf, img)
+    print(preds)
