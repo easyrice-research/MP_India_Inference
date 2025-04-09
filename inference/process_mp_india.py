@@ -5,22 +5,24 @@ import numpy as np
 from torch.utils.data import DataLoader
 import logging
 from tqdm import tqdm
+import requests
+import os
 
 from return_models import get_dino_finetuned_downloaded, get_classfier
 from dataset import CustomDataset
 
-logger = logging.getLogger("inference").setLevel(logging.INFO)
-
-transformer = None
-clf_model = None
-
+ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {
     'overall': [0, 1, 2],
     '1121': [0, 1],
     '1509': [0, 2]
 }
-
 CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
+
+logger = logging.getLogger("inference").setLevel(logging.INFO)
+
+transformer = None
+clf_model = None
 
 def map_class_names(model: str, class_map: dict, class_dict: dict):
     return {i: class_dict[i] if i in class_map[model] else 'None' for i in class_dict}
@@ -59,14 +61,14 @@ def get_embeddings(images, transformer):
 
     return np.array(embeddings)
 
-def predict_and_transform(model, infer_loader):
+def predict_and_transform(model_weight, model, infer_loader):
     """
     Predict the classes for the input data using the classifier model.
     Args:
         model (torch.nn.Module): The classifier model.
         val_loader (DataLoader): DataLoader"""
     
-    class_names = map_class_names(model, CLASS_MAP, CLASS_DICT)
+    class_names = map_class_names(model_weight, CLASS_MAP, CLASS_DICT)
     
     result = []
     # Disable gradient computation for inference
@@ -82,20 +84,31 @@ def predict_and_transform(model, infer_loader):
 
     return {'result': result}
 
-def infer(img):
+def infer(img, model_weight, request_id):
     """
     Perform inference using the DINO model and classifier.
     Args:
         img (torch.Tensor): The input image tensor.
+        model_weight (string): The input model name.
+        request_id (string): The request id from user
     Returns:
-        torch.Tensor: The predicted classes.
+        List: result: Array<{class:string, weight: number}>
     """
+    if (len(img) == 0):
+        try:
+            myobj = {'request_id': request_id, 'error_code': 'image_p1',
+                     'reason': 'cannot process image has problem'}
+            requests.post(ERROR_ENDPOINT, json=myobj)
+        except:
+            pass
+        raise Exception("Cannot retreive target image")
+
 
     embeddings = get_embeddings(img, transformer)
     embeddings = torch.from_numpy(embeddings).float().to("cuda")
     infer_embeddings = CustomDataset(embeddings, None)
     infer_loader = DataLoader(infer_embeddings, batch_size=64, shuffle=False)
-    preds = predict_and_transform(clf_model, infer_loader)
+    preds = predict_and_transform(model_weight, clf_model, infer_loader)
 
     return preds
 
