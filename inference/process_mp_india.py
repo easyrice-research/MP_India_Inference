@@ -20,8 +20,8 @@ from inference.process_dataset import CustomDataset
 ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {
     'overall': [0, 1, 2],
-    'Pusa_1121_Basmati': [0, 1],
-    'Pusa_1509_Basmati': [0, 2]
+    'Pusa_1121_Basmati': [1],
+    'Pusa_1509_Basmati': [2]
 }
 CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
 
@@ -145,8 +145,7 @@ def predict_and_transform(model_weight, model, infer_loader):
             preds_np = preds.cpu().numpy()  # Convert to NumPy array
 
             for pred in preds_np:
-                result.append([{"class": class_names[pred], "weight": 0}])
-            # result.append([{"class": class_names[preds.cpu().numpy()], "weight": 0}])  # Move back to CPU and store the predictions
+                result.append({"class": class_names[pred], "weight": 0})
 
     print(f"predict result: {result}")
     return {'result': result}
@@ -242,6 +241,20 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
 
     x_test = np.asarray(list_im)
     
+    # color_map = [
+    #     [54.0, 255.0, 47.0],
+    #     [0.0, 255.0, 255.0],
+    #     [0.0, 255.0, 255.0],
+    #     [0.0, 255.0, 255.0],
+    #     [255.0, 18.0, 18.0]
+    # ]
+    # each_y_pred = np.copy(y_pred)
+    # each_y_pred[(np_defect_2 == 1)] = 99 
+    # each_y_pred[(score_x_test <= 19)] = 99 
+
+    # save_each_class(pred_inst, list_inst, each_y_pred, img,
+    #                 "/tmp/overall/", request_id, color_map)
+    
     embeddings = get_embeddings(x_test, transformer)
     embeddings = torch.from_numpy(embeddings).float().to("cuda")
     infer_embeddings = CustomDataset(embeddings, None)
@@ -250,11 +263,11 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
 
     return preds
 
-def model_initilize():
+def model_initialize():
     global transformer, clf_model
     transformer_path = "/models/mp-india-models/teacher_checkpoint.pth"
     transformer = get_dino_finetuned_downloaded(model_path=transformer_path, modelname="dinov2_vitb14_reg")
     clf_path = "/models/mp-india-models/best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
     clf_model = get_classfier(checkpoint_path=clf_path)
 
-model_initilize()
+model_initialize()
