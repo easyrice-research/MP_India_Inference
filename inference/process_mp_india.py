@@ -248,9 +248,9 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
 
 def model_initilize():
     global transformer, clf_model
-    transformer_path = "/models/mp_india_models/teacher_checkpoint.pth"
+    transformer_path = "/models/mp-india-models/teacher_checkpoint.pth"
     transformer = get_dino_finetuned_downloaded(model_path=transformer_path, modelname="dinov2_vitb14_reg")
-    clf_path = "/models/mp_india_models/best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
+    clf_path = "/models/mp-india-models/best_model_04-04_14-41-epoch=191-val_acc=0.7654-trinary-non-lanta-tuned.ckpt"
     clf_model = get_classfier(checkpoint_path=clf_path)
 
 model_initilize()
