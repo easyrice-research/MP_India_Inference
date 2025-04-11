@@ -7,7 +7,7 @@ from torchvision import datasets, transforms
 from PIL import Image
 import numpy as np
 from torch.utils.data import DataLoader
-import logging
+# import logging
 from tqdm import tqdm
 import requests
 import os
@@ -25,7 +25,7 @@ CLASS_MAP = {
 }
 CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
 
-logger = logging.getLogger("inference").setLevel(logging.INFO)
+# logger = logging.getLogger("inference").setLevel(logging.INFO)
 
 transformer = None
 clf_model = None
@@ -112,7 +112,6 @@ def get_embeddings(images, transformer):
         transformer (torch.nn.Module): The DINO model."""
     
     embeddings = []
-    logger.info("Getting embeddings for the input data")
     for image in tqdm(images, desc="Processing images", unit="image"):
         transformer.eval()
         with torch.no_grad():
