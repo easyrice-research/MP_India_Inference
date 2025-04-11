@@ -142,7 +142,11 @@ def predict_and_transform(model_weight, model, infer_loader):
             x_batch = x_batch.squeeze(1)
             logits = model(x_batch)
             preds = torch.argmax(logits, dim=1)  # Get the predicted class index for each sample
-            result.append([{"class": class_names[preds.cpu().numpy()], "weight": 0}])  # Move back to CPU and store the predictions
+            preds_np = preds.cpu().numpy()  # Convert to NumPy array
+
+            for pred in preds_np:
+                result.append([{"class": class_names[pred], "weight": 0}])
+            # result.append([{"class": class_names[preds.cpu().numpy()], "weight": 0}])  # Move back to CPU and store the predictions
 
     print(f"predict result: {result}")
     return {'result': result}
