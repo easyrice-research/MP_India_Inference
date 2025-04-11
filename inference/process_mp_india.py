@@ -20,8 +20,8 @@ from inference.process_dataset import CustomDataset
 ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {
     'overall': [0, 1, 2],
-    '1121': [0, 1],
-    '1509': [0, 2]
+    'Pusa_1121_Basmati': [0, 1],
+    'Pusa_1509_Basmati': [0, 2]
 }
 CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
 
