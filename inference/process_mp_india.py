@@ -1,6 +1,7 @@
 from functools import partial
-from functions.purity_utils import rotate_image
-from functions.weight_feature import preprocess
+from inference.functions.crop_utils import *
+from inference.functions.purity_utils import *
+from inference.functions.weight_feature import *
 import torch 
 from torchvision import datasets, transforms
 from PIL import Image
