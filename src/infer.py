@@ -7,7 +7,7 @@ import logging
 from tqdm import tqdm
 
 from return_models import get_dino_finetuned_downloaded, get_classfier
-from dataset import CustomDataset
+from MP_India_Inference.src.process_dataset import CustomDataset
 
 logger = logging.getLogger("inference").setLevel(logging.INFO)
 
