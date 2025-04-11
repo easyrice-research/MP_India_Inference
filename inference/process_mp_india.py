@@ -144,6 +144,7 @@ def predict_and_transform(model_weight, model, infer_loader):
             preds = torch.argmax(logits, dim=1)  # Get the predicted class index for each sample
             result.append([{"class": class_names[preds.cpu().numpy()], "weight": 0}])  # Move back to CPU and store the predictions
 
+    print(f"predict result: {results}")
     return {'result': result}
 
 def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, model_weight="overall", request_id=None):
