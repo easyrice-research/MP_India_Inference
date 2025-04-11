@@ -14,8 +14,8 @@ import os
 from multiprocessing import get_context
 import cv2
 
-from return_models import get_dino_finetuned_downloaded, get_classfier
-from process_dataset import CustomDataset
+from inference.return_models import get_dino_finetuned_downloaded, get_classfier
+from inference.process_dataset import CustomDataset
 
 ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {

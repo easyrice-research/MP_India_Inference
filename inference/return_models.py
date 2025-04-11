@@ -6,7 +6,7 @@ import torch.nn as nn
 import torch.optim as optim
 import logging
 import pytorch_lightning as pl
-from models import TransformerClassifier
+from inference.models import TransformerClassifier
 logger = logging.getLogger("inference")
 
 # for 224
