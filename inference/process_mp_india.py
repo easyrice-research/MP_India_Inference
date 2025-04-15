@@ -88,7 +88,7 @@ def predict_defect_shape(img,top,bottom):
         return 1 #defect
 
 def map_class_names(model: str, class_map: dict, class_dict: dict):
-    return {i: class_dict[i] if i in class_map[model] else 'None' for i in class_dict}
+    return {i: class_dict[i] if i in class_map[model] else None for i in class_dict}
 
 def preprocess_image(image):
     """
@@ -143,11 +143,9 @@ def predict_and_transform(model_weight, model, infer_loader):
             logits = model(x_batch)
             preds = torch.argmax(logits, dim=1)  # Get the predicted class index for each sample
             preds_np = preds.cpu().numpy()  # Convert to NumPy array
-
             for pred in preds_np:
                 result.append({"class": class_names[pred], "weight": 0})
 
-    print(f"predict result: {result}")
     return {'result': result}
 
 def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, model_weight="overall", request_id=None):
@@ -164,7 +162,6 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
     pred_inst_centroids = pred_inst_centroid
     # For weight_func
     kernel_attrs = []
-    batch_size = 1024
     list_inst = []
     im = []
     _, counts_pixel = np.unique(pred_inst, return_counts=True)
@@ -188,8 +185,6 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
             globle_max_x = -1
 
         func = partial(preprocess, pred_inst, pred_type, img, ans , globle_max_x)
-
-#         func = partial(preprocess, pred_inst, pred_type, img, ans)
 
         cpu_count = os.cpu_count() // 2 or 1
         with get_context("spawn").Pool(cpu_count) as p:
@@ -226,7 +221,6 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
 
     list_im = []
     list_defect_2 = []
-    # if model_weight in ['overall_PT1', 'nfavor_ml_1', 'dy_gk79_1']:
     for each_im in x_test:
         uint8_img = each_im.astype('uint8')
         try:
@@ -240,28 +234,33 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
         list_im.append(rotate_image(uint8_img))
 
     x_test = np.asarray(list_im)
-    
-    # color_map = [
-    #     [54.0, 255.0, 47.0],
-    #     [0.0, 255.0, 255.0],
-    #     [0.0, 255.0, 255.0],
-    #     [0.0, 255.0, 255.0],
-    #     [255.0, 18.0, 18.0]
-    # ]
-    # each_y_pred = np.copy(y_pred)
-    # each_y_pred[(np_defect_2 == 1)] = 99 
-    # each_y_pred[(score_x_test <= 19)] = 99 
 
-    # save_each_class(pred_inst, list_inst, each_y_pred, img,
-    #                 "/tmp/overall/", request_id, color_map)
-    
     embeddings = get_embeddings(x_test, transformer)
     embeddings = torch.from_numpy(embeddings).float().to("cuda")
     infer_embeddings = CustomDataset(embeddings, None)
-    infer_loader = DataLoader(infer_embeddings, batch_size=64, shuffle=False)
-    preds = predict_and_transform(model_weight, clf_model, infer_loader)
+    infer_loader = DataLoader(infer_embeddings, batch_size=1, shuffle=False)
+    result = predict_and_transform(model_weight, clf_model, infer_loader)
+    
+    # Invert
+    INVERSE_CLASS_DICT = {v: k for k, v in CLASS_DICT.items()}
+    INVERSE_CLASS_DICT['None'] = 3  # Handle string 'None' as special class
 
-    return preds
+    # Map result classes to integers
+    y_preds = np.array([
+        INVERSE_CLASS_DICT.get(entry['class'], 3) for entry in result['result']
+    ])
+    
+    color_map = [
+        [54.0, 255.0, 47.0],     # Vivid green
+        [0.0, 255.0, 255.0],     # Cyan
+        [255.0, 255.0, 70.0],    # Yellow
+        [255.0, 18.0, 18.0]      # Bright red
+    ]
+    
+    save_each_class(pred_inst, list_inst, y_preds, img,
+                    f"/tmp/{model_weight}/", request_id, color_map)
+    
+    return result
 
 def model_initialize():
     global transformer, clf_model
