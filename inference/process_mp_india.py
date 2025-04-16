@@ -19,9 +19,9 @@ from inference.process_dataset import CustomDataset
 
 ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {
-    'OVERALL': [0, 1, 2],
-    'PB1121': [1],
-    'PB1509': [2]
+    'overall': [0, 1, 2],
+    'pb1121': [1],
+    'pb1509': [2]
 }
 CLASS_DICT = {0: 'OTHER', 1: 'PB1121', 2: 'PB1509'}
 
