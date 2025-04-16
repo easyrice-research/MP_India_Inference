@@ -88,7 +88,7 @@ def predict_defect_shape(img,top,bottom):
         return 1 #defect
 
 def map_class_names(model: str, class_map: dict, class_dict: dict):
-    return {i: class_dict[i] if i in class_map[model] else None for i in class_dict}
+    return {i: class_dict[i] if i in class_map[model] else 'None' for i in class_dict}
 
 def preprocess_image(image):
     """
