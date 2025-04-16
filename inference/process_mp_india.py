@@ -20,10 +20,10 @@ from inference.process_dataset import CustomDataset
 ERROR_ENDPOINT = os.environ["ERROR_ENDPOINT"]
 CLASS_MAP = {
     'OVERALL': [0, 1, 2],
-    'PUSA_1121': [1],
-    'PUSA_1509': [2]
+    'PB1121': [1],
+    'PB1509': [2]
 }
-CLASS_DICT = {0: 'Other', 1: 'Pusa 1121 Basmati', 2: 'Pusa 1509 Basmati'}
+CLASS_DICT = {0: 'OTHER', 1: 'PB1121', 2: 'PB1509'}
 
 # logger = logging.getLogger("inference").setLevel(logging.INFO)
 
@@ -251,9 +251,9 @@ def infer(img=None, pred_inst=None, pred_type=None, pred_inst_centroid=None, mod
     ])
     
     color_map = [
-        [54.0, 255.0, 47.0],     # Vivid green
-        [0.0, 255.0, 255.0],     # Cyan
-        [255.0, 255.0, 70.0],    # Yellow
+        [255.0, 255.0, 70.0],     # yellow
+        [54.0, 255.0, 47.0],     # green
+        [54.0, 255.0, 47.0],    # green
         [255.0, 18.0, 18.0]      # Bright red
     ]
     
